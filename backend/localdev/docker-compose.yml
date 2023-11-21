@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  fwe-mysql:
+    build: .
+    container_name: fwe-mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: admin
+      MYSQL_DATABASE: FWE_DATABASE
+      MYSQL_USER: localdev
+      MYSQL_PASSWORD: dev
+    volumes:
+      - fwe-mysql-data:/var/lib/fwe-mysql
+
+volumes:
+  fwe-mysql-data:
