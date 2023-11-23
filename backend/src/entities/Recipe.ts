@@ -1,4 +1,4 @@
-import {Collection, Entity, ManyToOne, OneToMany, PrimaryKey, Property} from "@mikro-orm/core";
+import {Collection, Entity, ManyToOne, OneToMany, Property} from "@mikro-orm/core";
 import {BaseEntity} from "./BaseEntity";
 import {CreateRecipeStepDTO, RecipeStep} from "./RecipeStep";
 import {number, object, string} from "yup";
@@ -21,7 +21,7 @@ export class Recipe extends BaseEntity{
     @ManyToOne(() => Category, {nullable: true, primary: false})
     category? : Category ;
 
-    @OneToMany(() => RecipeImage, (im) => im.image)
+    @OneToMany(() => RecipeImage, (im) => im.recipe)
     recipeImages = new Collection<RecipeImage>(this);
 
     @OneToMany(() => RecipeStep, (rs) => rs.recipe)

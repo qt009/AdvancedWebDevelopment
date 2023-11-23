@@ -7,6 +7,7 @@ import {RecipeImage} from "./entities/RecipeImage";
 import {RecipeStep} from "./entities/RecipeStep";
 
 const options : Options ={
+    type: 'mysql',
     entities: [Category, Ingredient, IngredientRecipe, Recipe, RecipeImage, RecipeStep],
     dbName: 'FWE_DATABASE',
     password: 'dev',

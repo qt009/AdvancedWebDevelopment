@@ -1,9 +1,10 @@
 import {Collection, Entity, OneToMany, PrimaryKey, Property} from "@mikro-orm/core";
 import {object, string} from "yup";
 import {CreateIngredientRecipeDTO, IngredientRecipe} from "./IngredientRecipe";
+import {BaseEntity} from "./BaseEntity";
 
 @Entity()
-export class Ingredient{
+export class Ingredient extends BaseEntity{
     @Property()
     name: string;
 
@@ -18,6 +19,7 @@ export class Ingredient{
 
 
     constructor({ name, description, link }: CreateIngredientDTO) {
+        super();
         this.name = name;
         this.description = description;
         this.link = link;

@@ -2,9 +2,10 @@ import {Entity, ManyToOne, Property} from "@mikro-orm/core";
 import {Recipe} from "./Recipe";
 import {Ingredient} from "./Ingredient";
 import {number, object, string} from "yup";
+import {BaseEntity} from "./BaseEntity";
 
 @Entity()
-export class IngredientRecipe{
+export class IngredientRecipe extends BaseEntity{
     @Property()
     amount: number;
 
@@ -18,6 +19,7 @@ export class IngredientRecipe{
     ingredient: Ingredient;
 
     constructor({ amount, unit, recipe, ingredient }: CreateIngredientRecipeDTO) {
+        super();
         this.amount = amount;
         this.unit = unit;
         this.recipe = recipe;
