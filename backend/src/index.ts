@@ -51,7 +51,7 @@ export const initializeServer = async () => {
     app.use((req, res, next) => RequestContext.create(DI.orm.em, next));
 
     // routes
-    app.use('/category', CategoryController);
+    app.use('/categories', CategoryController);
     app.use('/ingredients', IngredientController);
     app.use('/ingredientRecipes', IngredientRecipeController);
     app.use('/recipes', RecipeController);

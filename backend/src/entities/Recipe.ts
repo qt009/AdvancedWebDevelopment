@@ -49,7 +49,7 @@ export type CreateRecipeDTO = {
     name: string;
     description: string;
     rating: number;
-    category: Category;
+    category?: Category;
     recipeImages?: CreateRecipeImageDTO[];
     ingredientRecipes?: CreateIngredientRecipeDTO[];
     recipeSteps?: CreateRecipeStepDTO[];
