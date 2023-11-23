@@ -12,10 +12,10 @@ export class IngredientRecipe extends BaseEntity{
     @Property()
     unit: string;
 
-    @ManyToOne(() => Recipe, { nullable: true, primary: true })
+    @ManyToOne(() => Recipe, { nullable: true, primary: false })
     recipe?: Recipe;
 
-    @ManyToOne(() => Ingredient, { nullable: true, primary: true })
+    @ManyToOne(() => Ingredient, { nullable: true, primary: false })
     ingredient: Ingredient;
 
     constructor({ amount, unit, recipe, ingredient }: CreateIngredientRecipeDTO) {

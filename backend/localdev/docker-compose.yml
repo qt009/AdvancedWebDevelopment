@@ -4,6 +4,7 @@ services:
   fwe-mysql:
     build: .
     container_name: fwe-mysql
+    restart: always
     ports:
       - "3306:3306"
     environment:
