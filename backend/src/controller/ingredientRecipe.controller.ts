@@ -27,10 +27,6 @@ router.get('/:ingredient', async (req, res) => {
     }
 });
 
-/**
- * New Feature
- * Get all recipes by one or more ingredients
- */
 router.get('/', async (req, res) => {
     try {
         const em = DI.orm.em.fork();

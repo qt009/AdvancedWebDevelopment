@@ -1,11 +1,11 @@
 import {BaseEntity} from "./BaseEntity";
-import {Collection, Entity, OneToMany, Property} from "@mikro-orm/core";
+import {Collection, Entity, OneToMany, PrimaryKey, Property} from "@mikro-orm/core";
 import {object, string} from "yup";
 import {Recipe} from "./Recipe";
 
 @Entity()
 export class Category extends BaseEntity{
-    @Property()
+    @PrimaryKey()
     name: string;
 
     @OneToMany(() => Recipe, (r) => r.category)

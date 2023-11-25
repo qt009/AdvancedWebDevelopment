@@ -1,4 +1,4 @@
-import {Collection, Entity, ManyToOne, OneToMany, Property} from "@mikro-orm/core";
+import {Collection, Entity, ManyToOne, OneToMany, PrimaryKey, Property} from "@mikro-orm/core";
 import {BaseEntity} from "./BaseEntity";
 import {CreateRecipeStepDTO, RecipeStep} from "./RecipeStep";
 import {number, object, string} from "yup";
@@ -9,7 +9,7 @@ import {CreateIngredientRecipeDTO, IngredientRecipe} from "./IngredientRecipe";
 @Entity()
 export class Recipe extends BaseEntity{
 
-    @Property()
+    @PrimaryKey()
     name: string;
 
     @Property()

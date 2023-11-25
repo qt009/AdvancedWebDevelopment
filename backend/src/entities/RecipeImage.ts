@@ -1,28 +1,34 @@
 import {BaseEntity} from "./BaseEntity";
-import {Entity, ManyToOne, Property} from "@mikro-orm/core";
+import {Entity, ManyToOne, PrimaryKey, Property} from "@mikro-orm/core";
 import {Recipe} from "./Recipe";
 import {object, string} from "yup";
 
 @Entity()
 export class RecipeImage extends BaseEntity{
+    @PrimaryKey()
+    imageName: string;
+
     @Property()
     imageURL: string;
 
     @ManyToOne(() =>Recipe)
     recipe?: Recipe;
 
-    constructor({image, recipe} : CreateRecipeImageDTO) {
+    constructor({imageName, imageUrl, recipe} : CreateRecipeImageDTO) {
         super();
-        this.imageURL = image;
+        this.imageName = imageName
+        this.imageURL = imageUrl;
         this.recipe = recipe;
     }
 }
 
 export const CreateRecipeImageSchema = object ({
+    imageName: string().required(),
     imageURL: string().required()
 })
 
 export type CreateRecipeImageDTO = {
-    image: string;
+    imageName: string;
+    imageUrl: string;
     recipe: Recipe
 }

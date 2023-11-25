@@ -5,7 +5,7 @@ import {BaseEntity} from "./BaseEntity";
 
 @Entity()
 export class Ingredient extends BaseEntity{
-    @Property()
+    @PrimaryKey()
     name: string;
 
     @Property()

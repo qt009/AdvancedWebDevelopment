@@ -8,6 +8,7 @@ import {CreateIngredientRecipeSchema, IngredientRecipe} from "../entities/Ingred
 import {CreateIngredientDTO, Ingredient} from "../entities/Ingredient";
 import {Category, CreateCategorySchema, CreateCategoryDTO} from "../entities/Category";
 import {CreateRecipeStepSchema, RecipeStep} from "../entities/RecipeStep";
+import {RecipeImage} from "../entities/RecipeImage";
 
 const router = Router({mergeParams: true});
 
@@ -32,16 +33,15 @@ router.get('/:name', async (req, res) => {
 });
 
 /**
- * New Feature
- * Get recipes with ratings greater than and equal to parameter
+ * Get recipes with given ratings
  */
-router.get('/recipes/:rating', async (req, res) => {
+router.get('/rating/:rating', async (req, res) => {
     const {rating} = req.params;
-
+    //TODO fix rating round up error
     try {
         const em = DI.em.fork();
         const recipes = await em.getRepository(Recipe).find(
-            {rating: {$lte: parseFloat(rating)}}
+            {rating: parseFloat(rating)}
         );
 
         res.status(200).json(recipes);
@@ -76,8 +76,8 @@ router.post('/', async (req, res) => {
 
         const newRecipe = new Recipe(CreateRecipeDTO);
 
+        //add to ingredients & ingredientRecipes
         if (CreateRecipeDTO.ingredientRecipes) {
-            console.log(newRecipe.ingredientRecipes.length)
             for (const ir of CreateRecipeDTO.ingredientRecipes) {
                 const validatedData = await CreateIngredientRecipeSchema.validate(ir).catch((e) => {
                     res.status(400).send({errors: e.errors});
@@ -94,14 +94,12 @@ router.post('/', async (req, res) => {
                 if (!existingIngredient) {
                     const CreateIngredientDTO: CreateIngredientDTO = {
                         name: ir.ingredient.name,
-                        description: "",
-                        link: "",
+                        description: ir.ingredient.description,
+                        link: ir.ingredient.link,
                     };
                     existingIngredient = new Ingredient(CreateIngredientDTO);
                 }
-
                 ir.ingredient = existingIngredient;
-
                 newRecipe.ingredientRecipes.add(new IngredientRecipe(ir));
             }
         } else {
@@ -136,7 +134,7 @@ router.post('/', async (req, res) => {
         } else {
             return res.status(400).send({errors: ['Missing category']});
         }
-
+        //add to recipeSteps
         if (CreateRecipeDTO.recipeSteps) {
             for (const rs of CreateRecipeDTO.recipeSteps) {
                 const validatedData = await CreateRecipeStepSchema.validate(rs).catch((e) => {
@@ -161,10 +159,6 @@ router.post('/', async (req, res) => {
         res.status(500).json({error: 'Internal Server Error'});
     }
 });
-
-/**
- * Put recipe by name
- */
 router.put('/:name', async (req, res) => {
     const {name} = req.params;
 
@@ -191,6 +185,7 @@ router.put('/:name', async (req, res) => {
         Object.assign(recipe, validatedData);
         await em.flush();
 
+        //TODO fix ValidationError: Value for Ingredient.id is required, 'undefined' found
         if (req.body.ingredientRecipes) {
             for (const ingredientRecipeData of req.body.ingredientRecipes) {
                 const validatedData = await CreateIngredientRecipeSchema.validate(ingredientRecipeData).catch((e) => {
@@ -200,15 +195,17 @@ router.put('/:name', async (req, res) => {
                     return;
                 }
 
-                let IsNew = true;
+                let isNewIngredientRecipe = true;
                 for (const ingredientRecipe of recipe.ingredientRecipes.getItems()) {
                     if (ingredientRecipeData.ingredient.name == ingredientRecipe.ingredient.name) {
                         Object.assign(ingredientRecipe, ingredientRecipeData);
-                        IsNew = false;
+                        console.log(`Assigned ingredientRecipe ${ingredientRecipe}`)
+                        isNewIngredientRecipe = false;
                     }
                 }
 
-                if (IsNew) {
+                if (isNewIngredientRecipe) {
+                    console.log(`It's new`)
                     ingredientRecipeData.recipe = recipe;
                     let existingIngredient = await em.getRepository(Ingredient).findOne({
                         name: ingredientRecipeData.ingredient.name,
@@ -216,8 +213,8 @@ router.put('/:name', async (req, res) => {
                     if (!existingIngredient) {
                         const CreateIngredientDTO: CreateIngredientDTO = {
                             name: ingredientRecipeData.ingredient.name,
-                            description: "",
-                            link: "",
+                            description: ingredientRecipeData.ingredient.description,
+                            link: ingredientRecipeData.ingredient.link,
                         };
                         existingIngredient = new Ingredient(CreateIngredientDTO);
                     }
@@ -229,8 +226,8 @@ router.put('/:name', async (req, res) => {
         }
 
         if (req.body.recipeSteps) {
-            for (const recipStep of recipe.recipeSteps.getItems()) {
-                em.remove(recipStep);
+            for (const recipeStep of recipe.recipeSteps.getItems()) {
+                em.remove(recipeStep);
             }
             recipe.recipeSteps.removeAll();
 
@@ -281,9 +278,6 @@ router.put('/:name', async (req, res) => {
     }
 });
 
-/**
- * Delete recipe by name
- */
 router.delete('/:name', async (req, res) => {
     try {
         const em = DI.orm.em.fork();
@@ -295,18 +289,25 @@ router.delete('/:name', async (req, res) => {
             return res.status(403).json({errors: [`You can't delete this recipe`]});
         }
 
-        const recipesWithIngredients = await em.getRepository(IngredientRecipe).find({
-            recipe: {name: req.params.name},
+        const ingredientRecipesOfToBeRemovedRecipe = await em.getRepository(IngredientRecipe).find({
+            recipe: existingRecipe,
         });
-        for (const ingredientRecipe of recipesWithIngredients) {
+        for (const ingredientRecipe of ingredientRecipesOfToBeRemovedRecipe) {
             em.remove(ingredientRecipe);
         }
 
-        const recipesWithSteps = await em.getRepository(RecipeStep).find({
-            recipe: {name: req.params.name},
+        const recipeSteps = await em.getRepository(RecipeStep).find({
+            recipe: existingRecipe,
         });
-        for (const recipeStep of recipesWithSteps) {
+        for (const recipeStep of recipeSteps) {
             em.remove(recipeStep);
+        }
+
+        const recipesImages = await em.getRepository(RecipeImage).find({
+            recipe: existingRecipe,
+        });
+        for (const recipeImage of recipesImages){
+            em.remove(recipeImage)
         }
 
         await em.remove(existingRecipe).flush();
@@ -317,9 +318,6 @@ router.delete('/:name', async (req, res) => {
     }
 });
 
-/**
- * Delete ingredients of recipe by recipe's name
- */
 router.delete('/:name/ingredients', async (req, res) => {
     const {name} = req.params;
 
@@ -335,10 +333,9 @@ router.delete('/:name/ingredients', async (req, res) => {
         }
 
         if (!req.body.ingredientNames || !Array.isArray(req.body.ingredientNames)) {
-            return res.status(400).send({error: 'Invalid or missing ingredient names in the request body'});
+            return res.status(400).send({error: 'An array of at least one ingredient name must be in the request body'});
         }
 
-        // Find and remove the IngredientRecipes by name
         for (const ingredientName of req.body.ingredientNames) {
             const ingredientRecipe = recipe.ingredientRecipes.getItems().find(
                 (ir) => ir.ingredient.name === ingredientName
@@ -352,7 +349,6 @@ router.delete('/:name/ingredients', async (req, res) => {
         }
 
         await em.persistAndFlush(recipe);
-
         res.status(200).send({message: `Ingredients from Recipe ${name} deleted successfully`});
     } catch (error) {
         console.error(error);
@@ -360,13 +356,9 @@ router.delete('/:name/ingredients', async (req, res) => {
     }
 });
 
-/**
- * Delete categories of recipe by recipe's name
- */
 router.delete('/:name/categories', async (req, res) => {
     try {
         const {name} = req.params;
-
         const em = DI.orm.em.fork();
         const recipe = await em.getRepository(Recipe).findOne(
             {name: name},
@@ -377,21 +369,75 @@ router.delete('/:name/categories', async (req, res) => {
             return res.status(404).send({error: 'Recipe not found'});
         }
 
-        if (!req.body.categories || !Array.isArray(req.body.categories)) {
-            return res.status(400).send({error: 'Invalid or missing category names in the request body'});
-        }
-
-        let category = req.body.category;
+        /*if (!req.body.categories || !Array.isArray(req.body.categories)) {
+            return res.status(400).send({error: 'An array of at least one category name must be in the request body'});
+        }*/
+        const category = recipe.category;
         if (category) {
             em.remove(category);
         } else {
-            return res.status(404).send({error: `Recipe with tag ${category} not found`});
+            return res.status(404).send({error: `Category of recipe ${recipe.name} not found`});
+        }
+        await em.persistAndFlush(recipe);
+        res.status(200).send({message: `Category from Recipe ${name} deleted successfully`});
+    } catch (error) {
+        console.error(error);
+        res.status(500).send({error: 'Internal Server Error'});
+    }
+});
+
+router.delete('/:name/recipeImages', async (req, res) => {
+    try {
+        const {name} = req.params;
+        const em = DI.orm.em.fork();
+        const recipe = await em.getRepository(Recipe).findOne(
+            {name: name},
+            {populate: ['category']}
+        );
+
+        if (!recipe) {
+            return res.status(404).send({error: 'Recipe not found'});
         }
 
-
+        const recipeImages = recipe.recipeImages;
+        if (recipeImages) {
+            for (const recipeImage of recipeImages){
+                em.remove(recipeImage)
+            }
+        } else {
+            return res.status(404).send({error: `Category of recipe ${recipe.name} not found`});
+        }
         await em.persistAndFlush(recipe);
+        res.status(200).send({message: `Category from Recipe ${name} deleted successfully`});
+    } catch (error) {
+        console.error(error);
+        res.status(500).send({error: 'Internal Server Error'});
+    }
+});
 
-        res.status(200).send({message: `Tags from Recipe ${name} deleted successfully`});
+router.delete('/:name/recipeImages/:imageName', async (req, res) => {
+    try {
+        const {name, imageName} = req.params;
+        const em = DI.orm.em.fork();
+        const recipe = await em.getRepository(Recipe).findOne(
+            {name: name},
+            {populate: ['category']}
+        );
+
+        if (!recipe) {
+            return res.status(404).send({error: 'Recipe not found'});
+        }
+
+        const recipeImages = recipe.recipeImages;
+        if (recipeImages) {
+            for (const recipeImage of recipeImages){
+                if (recipeImage.imageName === imageName) em.remove(recipeImage)
+            }
+        } else {
+            return res.status(404).send({error: `Category of recipe ${recipe.name} not found`});
+        }
+        await em.persistAndFlush(recipe);
+        res.status(200).send({message: `Category from Recipe ${name} deleted successfully`});
     } catch (error) {
         console.error(error);
         res.status(500).send({error: 'Internal Server Error'});

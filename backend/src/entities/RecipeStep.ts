@@ -1,11 +1,11 @@
 import {BaseEntity} from "./BaseEntity";
-import {Entity, ManyToOne, Property} from "@mikro-orm/core";
+import {Entity, ManyToOne, PrimaryKey, Property} from "@mikro-orm/core";
 import {Recipe} from "./Recipe";
 import {object, string} from 'yup';
 
 @Entity()
 export class RecipeStep extends BaseEntity{
-    @Property()
+    @PrimaryKey()
     stepName: string;
 
     @Property()

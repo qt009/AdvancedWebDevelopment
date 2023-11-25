@@ -1,7 +1,5 @@
 import { Router } from 'express';
 
-import { wrap } from '@mikro-orm/core';
-
 import { DI } from '../';
 import {Category, CreateCategoryDTO, CreateCategorySchema} from "../entities/Category";
 
@@ -95,9 +93,6 @@ router.put('/:name', async (req, res) => {
     }
 });
 
-/**
- * Delete category by name
- */
 router.delete('/:name', async (req, res) => {
     const em = DI.orm.em.fork();
 
