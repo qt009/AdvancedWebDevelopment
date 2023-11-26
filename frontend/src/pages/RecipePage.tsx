@@ -20,18 +20,22 @@ import {
 } from "@chakra-ui/react";
 import {useState, useEffect} from "react";
 
+
 export const RecipePage = () => {
-    const [recipes, setRecipes] = useState([]);
+    const initialState = {
+        id: "",
+        name: "", description: "", rating: 0,
+        category: {name: ""},
+        ingredientRecipes: [{amount: 0, unit: "", ingredient: {name: "", description: "", link: ""}}],
+        recipeImages: [{imageName: "", imageUrl: ""}],
+        recipeSteps: [{stepName: "", stepDescription: ""}]
+    }
+
+    const [recipes, setRecipes] = useState(Array(initialState));
     const [selectedRecipe, setSelectedRecipe] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editedRecipe, setEditedRecipe] = useState(
-        {
-            name: "", description: "", rating: 0,
-            category: {name: ""},
-            recipeImages: [{imageName: "", imageUrl: ""}],
-            ingredientRecipes: [{amount: 0, unit: "", ingredient: {name: "", description: "", link: ""}}],
-            recipeSteps: [{stepName: "", stepDescription: ""}]
-        });
+        initialState)
     const [editMode, setEditMode] = useState(false);
 
     useEffect(() => {
@@ -45,23 +49,31 @@ export const RecipePage = () => {
     // Function to open the modal for adding a new recipe
     const openAddRecipeForm = () => {
         setSelectedRecipe(null); // Clear selected recipe
-        setEditedRecipe({
-            name: "",
-            description: "",
-            rating: 0,
-            category: { name: "" },
-            recipeImages: [{ imageName: "", imageUrl: "" }],
-            ingredientRecipes: [{ amount: 0, unit: "", ingredient: { name: "", description: "", link: "" } }],
-            recipeSteps: [{ stepName: "", stepDescription: "" }],
-        });
+        setEditedRecipe(initialState);
         setEditMode(true);
         setIsModalOpen(true);
     };
 
     const openRecipeForm = (recipe: any) => {
-        console.log("Opening form for recipe:", recipe.name);
-        setSelectedRecipe(recipe);
+        console.log("Opening form for recipe:", recipe);
+
+        fetch(`http://localhost:3000/recipes/${recipe.name}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Success:', data);
+                setSelectedRecipe(data);
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+
         setEditedRecipe({
+            id: recipe.id,
             name: recipe.name, description: recipe.description, rating: recipe.rating,
             category: recipe.category, ingredientRecipes: [{ amount: 0, unit: "", ingredient: { name: "", description: "", link: "" } }], recipeImages: recipe.recipeImages, recipeSteps: recipe.recipeSteps
         });
@@ -236,6 +248,22 @@ export const RecipePage = () => {
                 : [],
         }));
     };
+    const handleDeleteRecipe = (recipeName: string) => {
+        // Make a DELETE request to delete the recipe with the specified name
+        fetch(`http://localhost:3000/recipes/${recipeName}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Success:', data);
+                // Optionally, you can update the state to reflect the changes after deletion
+                setRecipes(prevRecipes => prevRecipes.filter(recipe => recipe.name !== recipeName));
+            })
+            .catch(error => console.error('Error:', error));
+    };
 
 
 
@@ -274,7 +302,7 @@ export const RecipePage = () => {
             })
                 .then(response => response.json())
                 .then(data => {
-                    console.log('Success:', data);
+                    setSelectedRecipe(data);
                 })
                 .catch((error) => {
                     console.error('Error:', error);
@@ -322,6 +350,12 @@ export const RecipePage = () => {
                         <Button colorScheme="teal" mt={2}>
                             View
                         </Button>
+                        <Button colorScheme="red" mt={2} ml={4} onClick={(e) => {
+                            e.stopPropagation(); // Prevent the card click event from triggering
+                            handleDeleteRecipe(recipe.name);
+                        }}>
+                            Delete
+                        </Button>
                     </Box>
                 ))}
             </SimpleGrid>
@@ -333,7 +367,6 @@ export const RecipePage = () => {
                     <ModalHeader>{selectedRecipe ? 'View Recipe' : 'Add New Recipe'}</ModalHeader>
                     <ModalCloseButton/>
                     <ModalBody>
-                        {/* Render your form with all relevant info based on selectedRecipe */}
                         {editedRecipe && (
                             <>
                                 {/* Basic Recipe Info */}
@@ -390,7 +423,6 @@ export const RecipePage = () => {
                                     <Text fontSize="xl" fontWeight="bold" mb={2}>
                                         Ingredients
                                     </Text>
-                                    {/* Render a list of input fields for ingredients */}
                                     {editedRecipe.ingredientRecipes?.map((ingredientRecipe, index) => (
                                         <Box key={index} mb={2} display="flex" alignItems="center">
                                             <Text fontSize="lg" mb={2} mr={2} style={{textIndent: 20}}>

@@ -32,7 +32,7 @@ router.get('/:name', async (req, res) => {
     }
 });
 
-router.get('/', async (req, res) => {
+router.get('/all', async (req, res) => {
     try {
         const em = DI.em.fork();
 
@@ -47,6 +47,30 @@ router.get('/', async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).send({error: 'Internal Server Error'});
+    }
+});
+
+router.get('/featured/recipes', async (req, res) => {
+    try {
+        const em = DI.em.fork();
+
+        // Fetch featured recipes sorted by rating in descending order with a limit of 3
+        const featuredRecipes = await em.getRepository(Recipe).findAll(
+            {
+                populate: ['ingredientRecipes', 'recipeSteps'],
+                orderBy: { rating: 'desc' },
+                limit: 3,
+            }
+        );
+
+        if (!featuredRecipes) {
+            return res.status(400).send({ errors: ['No featured recipes found in the database'] });
+        }
+
+        res.status(200).send(featuredRecipes);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send({ error: 'Internal Server Error' });
     }
 });
 
