@@ -38,7 +38,6 @@ import {Category} from "./Category";
 name: string;
 description: string;
 rating: number;
-image: string;
 category: Category
 ingredientRecipes: array <IngredientRecipes>
 images: array <RecipeImage>
