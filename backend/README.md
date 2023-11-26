@@ -79,6 +79,17 @@ stepName: string;
 stepDescription: string;
 recipe: Recipe;
 ```
+
+### RecipeImage Entity
+RecipeImage entity stores the image of the recipe.
+
+```typescript
+import {url} from "inspector";
+
+name: string;
+url: string;
+recipe: Recipe;
+```
 ---
 
 ## API
