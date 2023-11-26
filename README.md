@@ -23,6 +23,7 @@ and connect to the database with the following credentials:
 ```
 user: root
 pass: admin
+port: 3306
 ```
 2. Do all the set up steps in backend.
 3. Do all the set up steps in frontend.
