@@ -14,8 +14,11 @@ export const Header = ({ rightMenu }: { rightMenu?: ReactNode }) => {
                 <Link as={NavLink} to="/recipes" mr={4}>
                     Recipes
                 </Link>
-                <Link as={NavLink} to="/categories">
+                <Link as={NavLink} to="/categories" mr={4}>
                     Categories
+                </Link>
+                <Link as={NavLink} to="/ingredients" mr={4}>
+                    Ingredients
                 </Link>
                 {rightMenu}
             </Flex>

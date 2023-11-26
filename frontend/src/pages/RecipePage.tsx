@@ -16,7 +16,7 @@ import {
     Input,
     FormLabel,
     Switch,
-    IconButton, Icon
+    IconButton, Icon, Image
 } from "@chakra-ui/react";
 import {useState, useEffect} from "react";
 
@@ -79,7 +79,7 @@ export const RecipePage = () => {
         setEditedRecipe({
             id: recipe.id,
             name: recipe.name, description: recipe.description, rating: recipe.rating,
-            category: recipe.category, ingredientRecipes: [{ amount: 0, unit: "", ingredient: { name: "", description: "", link: "" } }], recipeImages: recipe.recipeImages, recipeSteps: recipe.recipeSteps
+            category: { name: recipe.category.name}, ingredientRecipes: [{ amount: 0, unit: "", ingredient: { name: "", description: "", link: "" } }], recipeImages: recipe.recipeImages, recipeSteps: recipe.recipeSteps
         });
         setIsModalOpen(true);
     };
@@ -95,7 +95,7 @@ export const RecipePage = () => {
         if (name.startsWith("category")) {
             setEditedRecipe((prevState) => ({
                 ...prevState,
-                category: {...prevState.category, [name.split(".")[1]]: value},
+                category: {...prevState.category, ["name"]: value},
             }));
         } else if (name.startsWith("ingredientRecipes")) {
             const index = name.match(/\d+/)[0];
@@ -357,6 +357,7 @@ export const RecipePage = () => {
                         </Text>
                         <Text>{recipe.description}</Text>
                         <Text>Rating: {recipe.rating}</Text>
+                        <Image src={recipe.link}></Image>
                         <Button colorScheme="teal" mt={2}>
                             View
                         </Button>

@@ -9,6 +9,8 @@ import {
   useLocation,
 } from "react-router-dom";
 import {RecipePage} from "./pages/RecipePage.tsx";
+import {CategoryPage} from "./pages/CategoryPage.tsx";
+import {IngredientPage} from "./pages/IngredientPage.tsx";
 
 export type RouteConfig = RouteProps & {
   /**
@@ -34,6 +36,14 @@ export const routes: RouteConfig[] = [
   {
     path: "/recipes",
     element: <RecipePage />,
+  },
+  {
+    path: "/categories",
+    element: <CategoryPage />,
+  },
+  {
+    path: "/ingredients",
+    element: <IngredientPage />,
   },
 
 ];

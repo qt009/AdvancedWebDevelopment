@@ -1,6 +1,6 @@
 import { Link as RouterLink } from "react-router-dom";
 import { BaseLayout } from "../layout/BaseLayout.tsx";
-import { VStack, Text, Button, SimpleGrid, Box } from "@chakra-ui/react";
+import {VStack, Text, Button, SimpleGrid, Box, Image} from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 
 export const HomePage = () => {
@@ -37,6 +37,7 @@ export const HomePage = () => {
                             </Text>
                             <Text>{recipe.description}</Text>
                             <Text>Rating: {recipe.rating}</Text>
+                            <Image src={recipe.link}></Image>
                             <RouterLink to={`/recipes/`}>
                                 <Button colorScheme="teal" mt={2}>
                                     Learn more
