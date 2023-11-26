@@ -32,9 +32,24 @@ router.get('/:name', async (req, res) => {
     }
 });
 
-/**
- * Get recipes with given ratings
- */
+router.get('/', async (req, res) => {
+    try {
+        const em = DI.em.fork();
+
+        const recipes = await em.getRepository(Recipe).findAll(
+            {populate: ['ingredientRecipes', 'recipeSteps']},);
+
+        if (!recipes) {
+            return res.status(400).send({errors: ['No recipes found in database']});
+        }
+
+        res.status(200).send(recipes);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send({error: 'Internal Server Error'});
+    }
+});
+
 router.get('/rating/:rating', async (req, res) => {
     const {rating} = req.params;
     //TODO fix rating round up error

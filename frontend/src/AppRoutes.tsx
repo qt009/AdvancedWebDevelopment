@@ -8,6 +8,7 @@ import {
   Routes,
   useLocation,
 } from "react-router-dom";
+import {RecipePage} from "./pages/RecipePage.tsx";
 
 export type RouteConfig = RouteProps & {
   /**
@@ -31,13 +32,10 @@ export const routes: RouteConfig[] = [
     element: <HomePage />,
   },
   {
-    path: "/auth/login",
-    // element: <LoginPage />,
+    path: "/recipes",
+    element: <RecipePage />,
   },
-  {
-    path: "/auth/register",
-    // element: <RegisterPage />,
-  },
+
 ];
 
 export interface AuthRequiredProps {

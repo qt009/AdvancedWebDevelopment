@@ -5,7 +5,7 @@ import {Recipe} from "./Recipe";
 
 @Entity()
 export class Category extends BaseEntity{
-    @PrimaryKey()
+    @Property()
     name: string;
 
     @OneToMany(() => Recipe, (r) => r.category)

@@ -5,7 +5,7 @@ import {object, string} from "yup";
 
 @Entity()
 export class RecipeImage extends BaseEntity{
-    @PrimaryKey()
+    @Property()
     imageName: string;
 
     @Property()

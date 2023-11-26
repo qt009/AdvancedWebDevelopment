@@ -5,7 +5,7 @@ import {object, string} from 'yup';
 
 @Entity()
 export class RecipeStep extends BaseEntity{
-    @PrimaryKey()
+    @Property()
     stepName: string;
 
     @Property()

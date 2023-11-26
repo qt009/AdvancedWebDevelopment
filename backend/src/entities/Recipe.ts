@@ -9,7 +9,7 @@ import {CreateIngredientRecipeDTO, IngredientRecipe} from "./IngredientRecipe";
 @Entity()
 export class Recipe extends BaseEntity{
 
-    @PrimaryKey()
+    @Property()
     name: string;
 
     @Property()

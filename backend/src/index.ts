@@ -16,6 +16,8 @@ import {RecipeStepController} from "./controller/recipeStep.controller";
 
 const PORT = 3000;
 const app = express();
+import cors from 'cors';
+
 
 export const DI = {} as {
     server: http.Server;
@@ -40,6 +42,7 @@ export const initializeServer = async () => {
     DI.recipeImageRepository = DI.orm.em.getRepository(RecipeImage);
     DI.recipeStepRepository = DI.orm.em.getRepository(RecipeStep);
 
+    app.use(cors());
     // example middleware
     app.use((req, res, next) => {
         console.info(`New request to ${req.path}`);
