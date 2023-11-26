@@ -37,9 +37,9 @@ export const HomePage = () => {
                             </Text>
                             <Text>{recipe.description}</Text>
                             <Text>Rating: {recipe.rating}</Text>
-                            <RouterLink to={`/recipes/${recipe.id}`}>
+                            <RouterLink to={`/recipes/`}>
                                 <Button colorScheme="teal" mt={2}>
-                                    View
+                                    Learn more
                                 </Button>
                             </RouterLink>
                         </Box>

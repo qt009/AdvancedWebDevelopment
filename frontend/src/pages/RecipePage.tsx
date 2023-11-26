@@ -37,15 +37,19 @@ export const RecipePage = () => {
     const [editedRecipe, setEditedRecipe] = useState(
         initialState)
     const [editMode, setEditMode] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
-        // Fetch recipes from your API
-        // Replace 'localhost:3000/recipes/' with your actual API endpoint
-        fetch('http://localhost:3000/recipes/')
+        // Fetch recipes from your API based on the search query
+        const apiUrl = searchQuery
+            ? `http://localhost:3000/recipes/all?query=${searchQuery}`
+            : 'http://localhost:3000/recipes/all';
+
+        fetch(apiUrl)
             .then(response => response.json())
             .then(data => setRecipes(data))
             .catch(error => console.error('Error fetching recipes:', error));
-    }, []);
+    }, [searchQuery]);
     // Function to open the modal for adding a new recipe
     const openAddRecipeForm = () => {
         setSelectedRecipe(null); // Clear selected recipe
@@ -57,7 +61,7 @@ export const RecipePage = () => {
     const openRecipeForm = (recipe: any) => {
         console.log("Opening form for recipe:", recipe);
 
-        fetch(`http://localhost:3000/recipes/${recipe.name}`, {
+        fetch(`http://localhost:3000/recipes/recipe/${recipe.name}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -250,7 +254,7 @@ export const RecipePage = () => {
     };
     const handleDeleteRecipe = (recipeName: string) => {
         // Make a DELETE request to delete the recipe with the specified name
-        fetch(`http://localhost:3000/recipes/${recipeName}`, {
+        fetch(`http://localhost:3000/recipes/recipe/${recipeName}`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
@@ -273,7 +277,7 @@ export const RecipePage = () => {
             console.log("Submitting form with updated data:", selectedRecipe);
 
             // @ts-ignore
-            fetch(`http://localhost:3000/recipes/${selectedRecipe.name}`, {
+            fetch(`http://localhost:3000/recipes/recipe/${selectedRecipe.name}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -293,7 +297,7 @@ export const RecipePage = () => {
             console.log("Submitting form with new data:", editedRecipe);
 
             // @ts-ignore
-            fetch('http://localhost:3000/recipes/', {
+            fetch('http://localhost:3000/recipes/recipe', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -318,6 +322,12 @@ export const RecipePage = () => {
 
     return (
         <BaseLayout>
+            <Input
+                placeholder="Search by name"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                mb={4}
+            />
             {/* Button to add a new recipe */}
             <Button colorScheme="teal" mt={4} onClick={openAddRecipeForm}>
                 Add New Recipe

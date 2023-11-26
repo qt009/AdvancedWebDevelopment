@@ -9,10 +9,17 @@ import {CreateIngredientDTO, Ingredient} from "../entities/Ingredient";
 import {Category, CreateCategorySchema, CreateCategoryDTO} from "../entities/Category";
 import {CreateRecipeStepSchema, RecipeStep} from "../entities/RecipeStep";
 import {RecipeImage} from "../entities/RecipeImage";
+import {PlainObject} from '@mikro-orm/core';
 
+class Filter extends PlainObject {
+    name: string | undefined;
+}
+
+const where = new Filter();
+where.name = '';
 const router = Router({mergeParams: true});
 
-router.get('/:name', async (req, res) => {
+router.get('/recipe/:name', async (req, res) => {
     const {name} = req.params;
     try {
         const em = DI.em.fork();
@@ -35,12 +42,26 @@ router.get('/:name', async (req, res) => {
 router.get('/all', async (req, res) => {
     try {
         const em = DI.em.fork();
+        const {query} = req.query;
+        console.log(query)
+        let recipes;
 
-        const recipes = await em.getRepository(Recipe).findAll(
-            {populate: ['ingredientRecipes', 'recipeSteps']},);
+        if (query) {
+            // If search query is provided, fetch matching recipes
+            recipes = await em.getRepository(Recipe).find(
+                {name: {$like: `%${query}%`}},
+                {populate: ['ingredientRecipes', 'recipeSteps']},
+            )
+            console.log(recipes)
+        } else {
+            // If no search query, fetch all recipes
+            recipes = await em.getRepository(Recipe).findAll(
+                {populate: ['ingredientRecipes', 'recipeSteps']},
+            );
+        }
 
         if (!recipes) {
-            return res.status(400).send({errors: ['No recipes found in database']});
+            return res.status(400).send({errors: ['No recipes found in the database']});
         }
 
         res.status(200).send(recipes);
@@ -58,19 +79,19 @@ router.get('/featured/recipes', async (req, res) => {
         const featuredRecipes = await em.getRepository(Recipe).findAll(
             {
                 populate: ['ingredientRecipes', 'recipeSteps'],
-                orderBy: { rating: 'desc' },
+                orderBy: {rating: 'desc'},
                 limit: 3,
             }
         );
 
         if (!featuredRecipes) {
-            return res.status(400).send({ errors: ['No featured recipes found in the database'] });
+            return res.status(400).send({errors: ['No featured recipes found in the database']});
         }
 
         res.status(200).send(featuredRecipes);
     } catch (error) {
         console.error(error);
-        res.status(500).send({ error: 'Internal Server Error' });
+        res.status(500).send({error: 'Internal Server Error'});
     }
 });
 
@@ -89,7 +110,7 @@ router.get('/rating/:rating', async (req, res) => {
         res.status(500).json({error: 'Internal Server Error'});
     }
 });
-router.post('/', async (req, res) => {
+router.post('/recipe', async (req, res) => {
     try {
         const validatedData = await CreateRecipeSchema.validate(req.body).catch((e) => {
             res.status(400).send({errors: e.errors});
@@ -198,7 +219,7 @@ router.post('/', async (req, res) => {
         res.status(500).json({error: 'Internal Server Error'});
     }
 });
-router.put('/:name', async (req, res) => {
+router.put('/recipe/:name', async (req, res) => {
     const {name} = req.params;
 
     try {
@@ -317,7 +338,7 @@ router.put('/:name', async (req, res) => {
     }
 });
 
-router.delete('/:name', async (req, res) => {
+router.delete('/recipe/:name', async (req, res) => {
     try {
         const em = DI.orm.em.fork();
 
@@ -345,7 +366,7 @@ router.delete('/:name', async (req, res) => {
         const recipesImages = await em.getRepository(RecipeImage).find({
             recipe: existingRecipe,
         });
-        for (const recipeImage of recipesImages){
+        for (const recipeImage of recipesImages) {
             em.remove(recipeImage)
         }
 
@@ -357,7 +378,7 @@ router.delete('/:name', async (req, res) => {
     }
 });
 
-router.delete('/:name/ingredients', async (req, res) => {
+router.delete('/recipe/:name/ingredients', async (req, res) => {
     const {name} = req.params;
 
     try {
@@ -395,7 +416,7 @@ router.delete('/:name/ingredients', async (req, res) => {
     }
 });
 
-router.delete('/:name/categories', async (req, res) => {
+router.delete('/recipe/:name/categories', async (req, res) => {
     try {
         const {name} = req.params;
         const em = DI.orm.em.fork();
@@ -425,7 +446,7 @@ router.delete('/:name/categories', async (req, res) => {
     }
 });
 
-router.delete('/:name/recipeImages', async (req, res) => {
+router.delete('/recipe/:name/recipeImages', async (req, res) => {
     try {
         const {name} = req.params;
         const em = DI.orm.em.fork();
@@ -440,7 +461,7 @@ router.delete('/:name/recipeImages', async (req, res) => {
 
         const recipeImages = recipe.recipeImages;
         if (recipeImages) {
-            for (const recipeImage of recipeImages){
+            for (const recipeImage of recipeImages) {
                 em.remove(recipeImage)
             }
         } else {
@@ -454,7 +475,7 @@ router.delete('/:name/recipeImages', async (req, res) => {
     }
 });
 
-router.delete('/:name/recipeImages/:imageName', async (req, res) => {
+router.delete('/recipe/:name/recipeImages/:imageName', async (req, res) => {
     try {
         const {name, imageName} = req.params;
         const em = DI.orm.em.fork();
@@ -469,7 +490,7 @@ router.delete('/:name/recipeImages/:imageName', async (req, res) => {
 
         const recipeImages = recipe.recipeImages;
         if (recipeImages) {
-            for (const recipeImage of recipeImages){
+            for (const recipeImage of recipeImages) {
                 if (recipeImage.imageName === imageName) em.remove(recipeImage)
             }
         } else {
